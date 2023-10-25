@@ -131,3 +131,6 @@ dmypy.json
 
 # DOCS
 docs/generated/**
+
+# Ignore MACOS
+.DS_Store
