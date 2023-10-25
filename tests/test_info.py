@@ -4,31 +4,28 @@
 import pytest
 import numpy as np
 from pypage.information import (
-        entropy,
-        conditional_entropy,
-        joint_entropy,
-        joint_entropy_3d,
-        mutual_information,
-        conditional_mutual_information)
+    entropy,
+    conditional_entropy,
+    joint_entropy,
+    joint_entropy_3d,
+    mutual_information,
+    conditional_mutual_information,
+)
 
 EPSILON = 1e-9
 
 
-def paired_arrays(
-        size=1e4, 
-        overlap=0.9, 
-        bin_sizes=[0.05, 0.85, 0.05]):
-    """janky solution to generating paired pseudo-bins and pseudo-ontologies.
-    """
+def paired_arrays(size=1e4, overlap=0.9, bin_sizes=[0.05, 0.85, 0.05]):
+    """janky solution to generating paired pseudo-bins and pseudo-ontologies."""
 
     size = int(size)
     bin_sizes = np.array(bin_sizes)
     bin_frac = bin_sizes / bin_sizes.sum()
     bin_sizes = (size * bin_sizes).astype(int)
-    
+
     # create bins
     bins = np.random.choice(bin_sizes.size, p=bin_frac, size=size)
-    
+
     # create ontology with overlap to first and last bin
     sig_max = np.max(bins)
     sig_min = np.min(bins)
@@ -41,18 +38,14 @@ def paired_arrays(
 
     x_bins = bins.max() + 1
     y_bins = ontology.max() + 1
-    
-    return (
-        bins.astype(np.int32), 
-        ontology.astype(np.int32), 
-        x_bins, 
-        y_bins)
+
+    return (bins.astype(np.int32), ontology.astype(np.int32), x_bins, y_bins)
 
 
 def test_conditional_entropy():
     """test conditions of conditional entropy
-    
-    H(Y|X) 
+
+    H(Y|X)
         = H(X,Y) - H(X)
         = H(X|Y) - H(X) + H(Y)
     """
@@ -70,10 +63,11 @@ def test_conditional_entropy():
     assert np.abs(h_yGx - exp1) < EPSILON
     assert np.abs(h_yGx - exp2) < EPSILON
 
+
 def test_mutual_information():
     """
     test alternative expressions of mutual information
-    I(X;Y) 
+    I(X;Y)
         = H(X) - H(X|Y)
         = H(Y) - H(Y|X)
         = H(X) + H(Y) - H(X,Y)
@@ -83,7 +77,7 @@ def test_mutual_information():
     x, y, x_bins, y_bins = paired_arrays()
     i_xy = mutual_information(x, y, x_bins, y_bins)
     i_yx = mutual_information(y, x, y_bins, x_bins)
-    
+
     h_x = entropy(x, x_bins)
     h_y = entropy(y, y_bins)
 
@@ -102,6 +96,7 @@ def test_mutual_information():
     assert np.abs(i_xy - exp4) < EPSILON
     assert np.abs(i_xy - i_yx) < EPSILON
 
+
 def test_joint_entropy():
     """test conditions of joint entropy using conditional and mutual information
     H(X,Y)
@@ -111,17 +106,18 @@ def test_joint_entropy():
     x, y, x_bins, y_bins = paired_arrays()
     i_xy = mutual_information(x, y, x_bins, y_bins)
     h_xy = joint_entropy(x, y, x_bins, y_bins)
-    
+
     h_x = entropy(x, x_bins)
     h_y = entropy(y, y_bins)
     h_xGy = conditional_entropy(x, y, x_bins, y_bins)
     h_yGx = conditional_entropy(y, x, y_bins, x_bins)
-    
+
     exp1 = h_x + h_y - i_xy
     exp2 = h_xGy + h_yGx + i_xy
 
     assert np.abs(h_xy - exp1) < EPSILON
     assert np.abs(h_xy - exp2) < EPSILON
+
 
 def test_conditional_mutual_information():
     """

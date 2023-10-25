@@ -6,9 +6,9 @@ import numpy as np
 from pypage import GeneSets
 
 
-N_GENES=1000
-N_PATHWAYS=50
-T=100
+N_GENES = 1000
+N_PATHWAYS = 50
+T = 100
 
 
 def get_ontology() -> (np.ndarray, np.ndarray):
@@ -18,11 +18,8 @@ def get_ontology() -> (np.ndarray, np.ndarray):
 
 
 def filter_assertions(
-        ont: GeneSets,
-        mask: np.ndarray, 
-        unique_pathways: np.ndarray, 
-        counts: np.ndarray):
-
+    ont: GeneSets, mask: np.ndarray, unique_pathways: np.ndarray, counts: np.ndarray
+):
     filtered_pathways = unique_pathways[mask]
     filtered_counts = counts[mask]
 
@@ -96,7 +93,7 @@ def test_ontology_null_filtering():
     for _ in np.arange(T):
         genes, pathways = get_ontology()
         ont = GeneSets(genes, pathways)
-        
+
         unique_pathways, counts = np.unique(pathways, return_counts=True)
         mask = np.ones(unique_pathways.size, dtype=bool)
         ont.filter_pathways()
@@ -109,7 +106,7 @@ def test_ontology_min_assertion():
         ont = GeneSets(genes, pathways)
 
         try:
-            ont.filter_pathways(min_size = -1)
+            ont.filter_pathways(min_size=-1)
         except AssertionError:
             continue
 
@@ -122,7 +119,7 @@ def test_ontology_max_assertion():
         ont = GeneSets(genes, pathways)
 
         try:
-            ont.filter_pathways(min_size = 10, max_size=5)
+            ont.filter_pathways(min_size=10, max_size=5)
         except AssertionError:
             continue
 
@@ -130,11 +127,11 @@ def test_ontology_max_assertion():
 
 
 def test_read_annotation_file():
-    ont = GeneSets(ann_file='example_data/hg38_cistrome_index.txt.gz')
+    ont = GeneSets(ann_file="example_data/hg38_cistrome_index.txt.gz")
     return ont
 
 
 def test_convert_from_to():
-    ont = GeneSets(ann_file='example_data/hg38_cistrome_index.txt.gz')
-    ont.convert_from_to('ensg', 'gs', 'human')
+    ont = GeneSets(ann_file="example_data/hg38_cistrome_index.txt.gz")
+    ont.convert_from_to("ensg", "gs", "human")
     return ont

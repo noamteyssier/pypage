@@ -2,8 +2,4 @@
 """
 
 from .page import PAGE
-from .io import (
-    GeneSets,
-    ExpressionProfile)
-
-
+from .io import GeneSets, ExpressionProfile

@@ -7,8 +7,8 @@ import numpy as np
 from pypage import ExpressionProfile
 
 
-N_GENES=1000
-N_BINS=5
+N_GENES = 1000
+N_BINS = 5
 T = 100
 
 
@@ -93,12 +93,12 @@ def test_load_bins():
 
 
 def test_expression_conversion():
-    df = pd.read_csv('example_data/bladder_refseq.tsv.gz',
-                     sep="\t",
-                     header=0,
-                     names=["gene", "exp"],
-                     compression='gzip')
-    exp = ExpressionProfile(df.iloc[:, 0],
-                            df.iloc[:, 1],
-                            n_bins=20)
-    exp.convert_from_to('refseq', 'ensg', 'human')
+    df = pd.read_csv(
+        "example_data/bladder_refseq.tsv.gz",
+        sep="\t",
+        header=0,
+        names=["gene", "exp"],
+        compression="gzip",
+    )
+    exp = ExpressionProfile(df.iloc[:, 0], df.iloc[:, 1], n_bins=20)
+    exp.convert_from_to("refseq", "ensg", "human")

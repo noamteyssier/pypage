@@ -42,13 +42,15 @@ class GeneSets:
     filter_pathways:
         filters pathways based on membership
     """
+
     def __init__(
-            self,
-            genes: Optional[np.ndarray] = None,
-            pathways: Optional[np.ndarray] = None,
-            ann_file: Optional[str] = None,
-            n_bins: Optional[int] = 3,
-            first_col_is_genes: Optional[bool] = False):
+        self,
+        genes: Optional[np.ndarray] = None,
+        pathways: Optional[np.ndarray] = None,
+        ann_file: Optional[str] = None,
+        n_bins: Optional[int] = 3,
+        first_col_is_genes: Optional[bool] = False,
+    ):
         """
         Parameters
         ==========
@@ -68,38 +70,38 @@ class GeneSets:
         self._make_membership_profile()
         self.n_bins = n_bins
 
-    def _read_annotation_file(self,
-                              ann_file: str,
-                              first_col_is_genes: Optional[bool] = False):
+    def _read_annotation_file(
+        self, ann_file: str, first_col_is_genes: Optional[bool] = False
+    ):
         """
-         Reads annotation files which are in a descriptive format,
-         i.e, "Gene1 Pathway1 Pathway2..." or "Pathway1 Gene1 Gene2..."
+        Reads annotation files which are in a descriptive format,
+        i.e, "Gene1 Pathway1 Pathway2..." or "Pathway1 Gene1 Gene2..."
 
-         Parameters
-         ----------
-         ann_file
-             a file name of the annotation
-         first_is_gene
-             a parameter which specifies whether a gene is
-         Returns
-         -------
-         pd.DataFrame
-             a dataframe in a long format
-         """
-        if ann_file[-2:] == 'gz':
-            f = gzip.open(ann_file, 'r')
+        Parameters
+        ----------
+        ann_file
+            a file name of the annotation
+        first_is_gene
+            a parameter which specifies whether a gene is
+        Returns
+        -------
+        pd.DataFrame
+            a dataframe in a long format
+        """
+        if ann_file[-2:] == "gz":
+            f = gzip.open(ann_file, "r")
         else:
             f = open(ann_file)
 
         row_names = []
         column_names = set()
         for line in f:
-            if ann_file[-2:] == 'gz':
-                line = line.decode('ASCII')
-            els = line.rstrip().split('\t')
+            if ann_file[-2:] == "gz":
+                line = line.decode("ASCII")
+            els = line.rstrip().split("\t")
             row_names.append(els[0])
             els.pop(0)
-            if 'http://' in els[0]:
+            if "http://" in els[0]:
                 els.pop(0)
             column_names |= set(els)
         column_names = list(column_names)
@@ -107,17 +109,17 @@ class GeneSets:
         positions = dict(zip(column_names, np.arange(len(column_names))))
         db_profiles = np.zeros((len(row_names), len(column_names)), dtype=int)
 
-        if ann_file[-2:] == 'gz':
-            f = gzip.open(ann_file, 'r')
+        if ann_file[-2:] == "gz":
+            f = gzip.open(ann_file, "r")
         else:
             f = open(ann_file)
 
         i = 0
         for line in f:
-            if ann_file[-2:] == 'gz':
-                line = line.decode('ASCII')
-            els = line.rstrip().split('\t')[1:]
-            if 'http://' in els[0]:
+            if ann_file[-2:] == "gz":
+                line = line.decode("ASCII")
+            els = line.rstrip().split("\t")[1:]
+            if "http://" in els[0]:
                 els.pop(0)
             indices = [positions[el] for el in els]
             db_profiles[i, indices] = 1
@@ -136,49 +138,33 @@ class GeneSets:
         self.n_genes = len(self.genes)
         self.n_pathways = len(self.pathways)
 
-    def _validate_inputs(
-            self,
-            x: np.ndarray,
-            y: np.ndarray):
-        """validates inputs are as expected
-        """
-        assert x.size > 0, \
-            "provided array must not be empty"
-        assert x.size == y.size, \
-            "genes and pathway arrays must be equal sized"
-        assert x.shape == y.shape, \
-            "genes and pathway arrays must be equally shaped"
+    def _validate_inputs(self, x: np.ndarray, y: np.ndarray):
+        """validates inputs are as expected"""
+        assert x.size > 0, "provided array must not be empty"
+        assert x.size == y.size, "genes and pathway arrays must be equal sized"
+        assert x.shape == y.shape, "genes and pathway arrays must be equally shaped"
 
-    def _load_genes(
-            self,
-            genes: np.ndarray):
-        """load genes and associated indices
-        """
+    def _load_genes(self, genes: np.ndarray):
+        """load genes and associated indices"""
         self._gene_indices = {n: idx for idx, n in enumerate(np.sort(np.unique(genes)))}
         self.genes = np.array(list(self._gene_indices.keys()))
         self.n_genes = self.genes.size
 
-    def _load_pathways(
-            self,
-            pathways: np.ndarray):
-        """load pathways and associated indices
-        """
-        self._pathway_indices = {n: idx for idx, n in enumerate(np.sort(np.unique(pathways)))}
+    def _load_pathways(self, pathways: np.ndarray):
+        """load pathways and associated indices"""
+        self._pathway_indices = {
+            n: idx for idx, n in enumerate(np.sort(np.unique(pathways)))
+        }
         self.pathways = np.array(list(self._pathway_indices.keys()))
         self.n_pathways = self.pathways.size
 
     def _calculate_pathway_sizes(self):
-        """calculates and sets pathway sizes
-        """
+        """calculates and sets pathway sizes"""
         self.pathway_sizes = self.bool_array.sum(axis=1)
         self.avg_p_size = self.pathway_sizes.mean()
 
-    def _build_bool_array(
-            self,
-            genes: np.ndarray,
-            pathways: np.ndarray):
-        """create the bool array of genes/pathway interactions
-        """
+    def _build_bool_array(self, genes: np.ndarray, pathways: np.ndarray):
+        """create the bool array of genes/pathway interactions"""
         self.bool_array = np.zeros((self.n_pathways, self.n_genes), dtype=int)
         for g, p in zip(genes, pathways):
             self.bool_array[self._pathway_indices[p]][self._gene_indices[g]] += 1
@@ -189,12 +175,8 @@ class GeneSets:
         del self._pathway_indices
         del self._gene_indices
 
-    def _build_bin_split(
-            self,
-            membership: np.ndarray,
-            n_bins: int) -> np.ndarray:
-        """converts membership array to binned data using equivlanet split method
-        """
+    def _build_bin_split(self, membership: np.ndarray, n_bins: int) -> np.ndarray:
+        """converts membership array to binned data using equivlanet split method"""
         argidx = np.argsort(membership)
         max_size = membership.size
         bin_size = int(max_size / n_bins)
@@ -213,7 +195,7 @@ class GeneSets:
 
             # put remaining into last bin
             else:
-                mask = (membership >= lower_bound)
+                mask = membership >= lower_bound
 
             self.bin_sizes[i] = mask.sum()
             self.bin_ranges[i] = lower_bound
@@ -225,9 +207,7 @@ class GeneSets:
         """create a gene membership array"""
         self.membership = self.bool_array.sum(0)
 
-    def get_gene_subset(
-            self,
-            gene_subset: np.ndarray) -> np.ndarray:
+    def get_gene_subset(self, gene_subset: np.ndarray) -> np.ndarray:
         """
         Index the bool-array for the required gene subset.
         Expects the subset to be sorted
@@ -247,9 +227,7 @@ class GeneSets:
         self.modified = True
         return self.sub_bool_array
 
-    def get_membership_subset(
-            self,
-            gene_subset: np.ndarray) -> np.ndarray:
+    def get_membership_subset(self, gene_subset: np.ndarray) -> np.ndarray:
         """
         Index the bool-array for the required gene membership subset and bin it.
         Expects the subset to be sorted
@@ -270,9 +248,8 @@ class GeneSets:
         return sub_membership_binned
 
     def filter_pathways(
-            self,
-            min_size: Optional[int] = None,
-            max_size: Optional[int] = None):
+        self, min_size: Optional[int] = None, max_size: Optional[int] = None
+    ):
         """
         Filters pathways to those within a specified range
 
@@ -284,7 +261,9 @@ class GeneSets:
             the maximum size of the pathways, default to current maximum
         """
         if not min_size and not max_size:
-            print("No minimum or maximum size provided. Doing nothing.", file=sys.stderr)
+            print(
+                "No minimum or maximum size provided. Doing nothing.", file=sys.stderr
+            )
             return
         if not min_size:
             min_size = 0
@@ -308,10 +287,9 @@ class GeneSets:
         self.bool_array = self.bool_array[:, g_mask]
         self.genes = self.genes[g_mask]
 
-    def convert_from_to(self,
-                        input_format: str,
-                        output_format: str,
-                        species: Optional[str] = 'human'):
+    def convert_from_to(
+        self, input_format: str, output_format: str, species: Optional[str] = "human"
+    ):
         """
         A function which changes accessions
         Parameters
@@ -323,23 +301,21 @@ class GeneSets:
         species
             analyzed species, takes either 'human' or 'mouse'
         """
-        if input_format in ['ensg', 'enst', 'refseq']:  # for ex., remove '.1' from 'ENSG00000128016.1'
-            self.genes = np.array([gene.split('.')[0] for gene in self.genes])
-        self.genes = change_accessions(self.genes,
-                                       input_format,
-                                       output_format,
-                                       species)
+        if input_format in [
+            "ensg",
+            "enst",
+            "refseq",
+        ]:  # for ex., remove '.1' from 'ENSG00000128016.1'
+            self.genes = np.array([gene.split(".")[0] for gene in self.genes])
+        self.genes = change_accessions(self.genes, input_format, output_format, species)
 
     def reset(self):
         self.modified = False
 
     def __repr__(self) -> str:
-        """
-        """
+        """ """
         s = ""
         s += "Gene Ontology\n"
         s += f">> num_genes: {self.n_genes}\n"
         s += f">> num_pathways: {self.n_pathways}\n"
         return s
-
-

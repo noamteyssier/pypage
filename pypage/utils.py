@@ -4,14 +4,11 @@
 import numpy as np
 import numba as nb
 from scipy.stats import hypergeom
-from .hist import (
-        hist1D,
-        hist2D,
-        hist3D)
+from .hist import hist1D, hist2D, hist3D
+
 
 @nb.jit(nopython=True)
-def shuffle_bin_array(
-        bin_array: np.ndarray) -> np.ndarray:
+def shuffle_bin_array(bin_array: np.ndarray) -> np.ndarray:
     """Shuffles the bin identities for a provided bin array
 
     Parameters
@@ -39,9 +36,7 @@ def shuffle_bin_array(
 
 
 @nb.jit(nopython=True)
-def empirical_pvalue(
-        array: np.ndarray,
-        value: float) -> float:
+def empirical_pvalue(array: np.ndarray, value: float) -> float:
     """Calculates the empirical pvalue of a value given a distribution
 
     Parameters
@@ -65,24 +60,22 @@ def empirical_pvalue(
     """
     m = array.max()
     if value > m:
-        return 0.
+        return 0.0
     else:
         return np.mean(array >= value)
 
 
-def hypergeometric_test(
-        e_bins: np.ndarray, 
-        o_bool: np.ndarray) -> np.ndarray:
+def hypergeometric_test(e_bins: np.ndarray, o_bool: np.ndarray) -> np.ndarray:
     """
-    
+
     Variable names from supplemental [1]_ translated to scipy documentation [2]_
 
         ``n`` : number of genes in the pathway
-        
+
         ``k`` : number of genes in the bin which are also in the pathway
-        
+
         ``N`` : number of genes in the bin
-        
+
         ``M`` : total number of genes
 
     Hypergeometric Form:
@@ -101,7 +94,7 @@ def hypergeometric_test(
     Results
     -------
     np.ndarray
-        a 2D array of shape (2, n_bins). 
+        a 2D array of shape (2, n_bins).
         the first array represents the p-value of overrepresentation
         the second array represents the p-value of underrepresentation
 
@@ -119,20 +112,19 @@ def hypergeometric_test(
 
     # parameterize hypergeometric distribution
     hg = hypergeom(M, n, N)
-    
+
     # measure overrepresentation
-    sf = hg.sf(k-1)
-    
+    sf = hg.sf(k - 1)
+
     # measure underrepresentation
     cdf = hg.cdf(k)
-    
+
     return np.stack([sf, cdf])
 
 
-def benjamini_hochberg(
-        p: np.ndarray) -> np.ndarray:
+def benjamini_hochberg(p: np.ndarray) -> np.ndarray:
     """
-    Benjamini-Hochberg p-value correction for multiple hypothesis testing. 
+    Benjamini-Hochberg p-value correction for multiple hypothesis testing.
 
     Parameters
     ----------
